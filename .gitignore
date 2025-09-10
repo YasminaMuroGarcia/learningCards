@@ -1,0 +1,8 @@
+# Go binaries
+/bin/
+/pkg/
+
+*.idea/
+*.vscode/
+
+.env
