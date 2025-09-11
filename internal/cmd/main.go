@@ -1,6 +1,7 @@
 package main
 
 import (
+	"learning-cards/internal/models"
 	"log"
 	"os"
 
@@ -16,16 +17,15 @@ func main() {
 		log.Fatal("failed to connect to the database:", err)
 	}
 
-	migrate(db) // Call the migration function
+	migrate(db)
 
-	// Your application logic here
 }
 
+// migrate does the migration for the database
 func migrate(db *gorm.DB) {
-	err := db.AutoMigrate(&Word{})
+	var allModels = []interface{}{&models.Word{}, &models.UserWord{}}
+	err := db.AutoMigrate(allModels...)
 	if err != nil {
 		log.Println("Migration failed:", err)
-	} else {
-		log.Println("Migration successful: User table created.")
 	}
 }
