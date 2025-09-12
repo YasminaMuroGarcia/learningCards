@@ -28,7 +28,7 @@ func main() {
 	userWordService := services.NewUserWordService(userWordRepo)
 	userWordHandler := handlers.NewUserWordHandler(userWordService)
 	r := gin.Default()
-	r.GET("/words/daily", userWordHandler.GetUserWords)
+	r.GET("/words/daily", userWordHandler.GetUserWordDueToday)
 
 	if err := r.Run(); err != nil {
 		log.Fatal("failed to start server:", err)

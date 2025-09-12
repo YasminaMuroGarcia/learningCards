@@ -24,5 +24,14 @@ func (h *UserWordHandler) GetUserWords(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, userWords)
-	
+
+}
+
+func (h *UserWordHandler) GetUserWordDueToday(c *gin.Context) {
+	userWords, err := h.service.GetUserDueToday()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve user words for today."})
+		return
+	}
+	c.JSON(http.StatusOK, userWords)
 }

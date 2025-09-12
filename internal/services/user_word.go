@@ -16,3 +16,6 @@ func NewUserWordService(repo *repository.UserWordRepository) *UserWordService {
 func (s *UserWordService) GetUserWords() ([]models.UserWord, error) {
 	return s.repo.GetUserWords()
 }
+func (s *UserWordService) GetUserDueToday() ([]models.UserWord, error) {
+	return s.repo.GetWordsDueToday()
+}
