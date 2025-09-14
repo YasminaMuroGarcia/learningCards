@@ -14,15 +14,27 @@ import (
 )
 
 func main() {
-
-	dbConfig := config.LoadDBConfig()
-	dsn := "host=" + dbConfig.Host + " user=" + dbConfig.User + " password=" + dbConfig.Password + " port=" + dbConfig.Port + " sslmode=" + dbConfig.SSLMode
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	db, err := initializeDatabase()
 	if err != nil {
 		log.Fatal("failed to connect to the database:", err)
 	}
 
 	migrate(db)
+
+	words := []models.Word{
+		{Word: "der Supermarkt", Translation: "el supermercado", Category: "basic, shopping"},
+		{Word: "das Geld", Translation: "el dinero", Category: "basic, shopping"},
+		{Word: "die Karte (Bankkarte)", Translation: "la tarjeta bancaria", Category: "basic, shopping"},
+		{Word: "die Tasche", Translation: "el bolso", Category: "basic, shopping"},
+		{Word: "der Tampon", Translation: "el tampón", Category: "basic, shopping"},
+		{Word: "die Binde", Translation: "la compresa", Category: "basic, shopping"},
+		{Word: "das Kondom", Translation: "el preservativo", Category: "basic, shopping"},
+		{Word: "die Zahnbürste", Translation: "el cepillo de dientes", Category: "basic, shopping"},
+		{Word: "die Hilfe", Translation: "la ayuda", Category: "basic, shopping"},
+		{Word: "die Polizei", Translation: "la policía", Category: "basic, shopping"},
+	}
+
+	insertData(db, words)
 
 	userWordRepo := repository.NewUserWordRepository(db)
 	userWordService := services.NewUserWordService(userWordRepo)
@@ -35,11 +47,26 @@ func main() {
 	}
 }
 
+// initializeDatabase initializes the database connection
+func initializeDatabase() (*gorm.DB, error) {
+	dbConfig := config.LoadDBConfig()
+	dsn := "host=" + dbConfig.Host + " user=" + dbConfig.User + " password=" + dbConfig.Password + " port=" + dbConfig.Port + " sslmode=" + dbConfig.SSLMode
+	return gorm.Open(postgres.Open(dsn), &gorm.Config{})
+}
+
 // migrate does the migration for the database
 func migrate(db *gorm.DB) {
 	var allModels = []interface{}{&models.Word{}, &models.UserWord{}}
-	err := db.AutoMigrate(allModels...)
-	if err != nil {
+	if err := db.AutoMigrate(allModels...); err != nil {
 		log.Println("Migration failed:", err)
+	}
+}
+
+func insertData(db *gorm.DB, words []models.Word) {
+	// Insert the words into the database
+	for _, word := range words {
+		if err := db.Create(&word).Error; err != nil {
+			log.Printf("failed to insert word %s: %v", word.Word, err)
+		}
 	}
 }
