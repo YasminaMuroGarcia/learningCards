@@ -19,3 +19,9 @@ func (s *UserWordService) GetUserWords() ([]models.UserWord, error) {
 func (s *UserWordService) GetUserDueToday() ([]models.UserWord, error) {
 	return s.repo.GetWordsDueToday()
 }
+func (s *UserWordService) AddUserWord(wordID uint) error {
+	return s.repo.AddUserWord(wordID)
+}
+func (s *UserWordService) GetAllWords() ([]models.Word, error) {
+	return s.repo.GetAllWords()
+}
