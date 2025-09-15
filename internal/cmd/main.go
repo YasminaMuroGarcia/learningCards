@@ -63,10 +63,13 @@ func migrate(db *gorm.DB) {
 }
 
 func insertData(db *gorm.DB, words []models.Word) {
-	// Insert the words into the database
-	for _, word := range words {
-		if err := db.Create(&word).Error; err != nil {
-			log.Printf("failed to insert word %s: %v", word.Word, err)
+	var count int64
+	db.Model(&models.Word{}).Count(&count)
+	if count == 0 {
+		for _, word := range words {
+			if err := db.Create(&word).Error; err != nil {
+				log.Printf("failed to insert word %s: %v", word.Word, err)
+			}
 		}
 	}
 }
