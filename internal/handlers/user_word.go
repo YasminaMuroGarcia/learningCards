@@ -4,6 +4,7 @@ import (
 	"learning-cards/internal/services"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -58,4 +59,23 @@ func (h *UserWordHandler) GetUserWordDueToday(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, userWords)
+}
+
+func (h *UserWordHandler) UpdateUserWord(c *gin.Context) {
+	wordID := c.Param("wordID")
+
+	// Convert wordID from string to uint
+	id, err := strconv.ParseUint(wordID, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid word ID"})
+		return
+	}
+
+	err = h.service.UpdateUserWord(uint(id))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update word"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Word updated successfully"})
 }

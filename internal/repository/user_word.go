@@ -53,10 +53,41 @@ func (ur *UserWordRepository) AddUserWord(wordID uint) error {
 		CorrectAttempts:   0,
 		IncorrectAttempts: 0,
 	}
-	fmt.Printf("Wer are here here hrer")
 	err := ur.db.Create(&userWord).Error
 	if err != nil {
 		fmt.Printf("Error creating user word: %v", err)
 	}
 	return err
+}
+
+func (ur *UserWordRepository) MarkAsLearned(wordID uint) error {
+	var userWord models.UserWord
+
+	if err := ur.db.Where("word_id = ?", wordID).First(&userWord).Error; err != nil {
+		return err
+	}
+
+	switch userWord.BoxNumber {
+	case 1:
+		userWord.NextReview = time.Now().Add(3 * 24 * time.Hour) // 3 days
+	case 2:
+		userWord.NextReview = time.Now().Add(7 * 24 * time.Hour) // 7 days
+	case 3:
+		userWord.NextReview = time.Now().Add(14 * 24 * time.Hour) // 2 weeks
+	case 4, 5:
+		userWord.NextReview = time.Now().Add(30 * 24 * time.Hour) // 1 month
+	}
+
+	if userWord.BoxNumber < 5 {
+		userWord.BoxNumber++
+	}
+
+	userWord.CorrectAttempts++
+	userWord.LastReview = time.Now()
+	err := ur.db.Save(&userWord).Error
+	if err != nil {
+		fmt.Printf("Error updating user word: %v", err)
+		return err
+	}
+	return nil
 }
