@@ -67,19 +67,20 @@ func (ur *UserWordRepository) MarkAsLearned(wordID uint) error {
 		return err
 	}
 
-	switch userWord.BoxNumber {
-	case 1:
-		userWord.NextReview = time.Now().Add(3 * 24 * time.Hour) // 3 days
-	case 2:
-		userWord.NextReview = time.Now().Add(7 * 24 * time.Hour) // 7 days
-	case 3:
-		userWord.NextReview = time.Now().Add(14 * 24 * time.Hour) // 2 weeks
-	case 4, 5:
-		userWord.NextReview = time.Now().Add(30 * 24 * time.Hour) // 1 month
-	}
-
 	if userWord.BoxNumber < 5 {
 		userWord.BoxNumber++
+	}
+	switch userWord.BoxNumber {
+	case 1:
+		userWord.NextReview = time.Now().Add(24 * time.Hour) // 1 day
+	case 2:
+		userWord.NextReview = time.Now().Add(3 * 24 * time.Hour) // 3 days
+	case 3:
+		userWord.NextReview = time.Now().Add(7 * 24 * time.Hour) // 7 days
+	case 4:
+		userWord.NextReview = time.Now().Add(14 * 24 * time.Hour) // 2 weeks
+	case 5:
+		userWord.NextReview = time.Now().Add(30 * 24 * time.Hour) // 1 month
 	}
 
 	userWord.CorrectAttempts++
