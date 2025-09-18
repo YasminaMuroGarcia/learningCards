@@ -18,7 +18,7 @@ type AppConfig struct {
 
 func LoadAppConfig() AppConfig {
 	return AppConfig{
-		Hostname: getEnv("HOSTNAME", "localhost"), // Get hostname from env
+		Hostname: getEnv("HOSTNAME", "localhost"),
 	}
 }
 func LoadDBConfig() DBConfig {

@@ -74,7 +74,7 @@ func (ur *UserWordRepository) UpdateLearningStatus(wordID uint, learned bool) er
 		// When the user failed a word, it goes directly to the first box
 		userWord.IncorrectAttempts++
 		userWord.BoxNumber = 1
-		userWord.NextReview = now.Add(24 * time.Hour) // 1 day
+		userWord.NextReview = now.Add(24 * time.Hour)
 	} else {
 		if userWord.BoxNumber < 5 {
 			userWord.BoxNumber++
@@ -92,31 +92,28 @@ func (ur *UserWordRepository) UpdateLearningStatus(wordID uint, learned bool) er
 
 func (ur *UserWordRepository) CheckUserWordExists(wordID uint) (bool, error) {
 	var count int64
-	// Use GORM's Count method to check for existence
 	err := ur.db.Model(&models.UserWord{}).Where("word_id = ?", wordID).Count(&count).Error
 	if err != nil {
-		// Log the error for debugging
 		log.Printf("Error checking existence of word %d: %v", wordID, err)
 		return false, err
 	}
 
-	// If count is greater than 0, the word exists
 	return count > 0, nil
 }
 
 func calculateNextReview(boxNumber uint, currentTime time.Time) time.Time {
 	switch boxNumber {
 	case 1:
-		return currentTime.Add(24 * time.Hour) // 1 day
+		return currentTime.Add(24 * time.Hour)
 	case 2:
-		return currentTime.Add(3 * 24 * time.Hour) // 3 days
+		return currentTime.Add(3 * 24 * time.Hour)
 	case 3:
-		return currentTime.Add(7 * 24 * time.Hour) // 7 days
+		return currentTime.Add(7 * 24 * time.Hour)
 	case 4:
-		return currentTime.Add(14 * 24 * time.Hour) // 2 weeks
+		return currentTime.Add(14 * 24 * time.Hour)
 	case 5:
-		return currentTime.Add(30 * 24 * time.Hour) // 1 month
+		return currentTime.Add(30 * 24 * time.Hour)
 	default:
-		return currentTime // Default case, should not happen
+		return currentTime
 	}
 }

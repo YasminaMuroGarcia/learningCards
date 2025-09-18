@@ -17,7 +17,7 @@ func Open() (*gorm.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	// optionally ping
+
 	sqlDB, err := db.DB()
 	if err == nil {
 		if err = sqlDB.Ping(); err != nil {

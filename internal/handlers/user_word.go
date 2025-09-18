@@ -39,54 +39,6 @@ func (h *UserWordHandler) GetUserWordDueToday(c *gin.Context) {
 	c.JSON(http.StatusOK, userWords)
 }
 
-//func (h *UserWordHandler) GetUserWordDueToday(c *gin.Context) {
-//	userWords, err := h.service.GetUserDueToday()
-//	if err != nil {
-//		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve user words for today."})
-//		return
-//	}
-//
-//	allWords, err := h.service.GetAllWords()
-//	if err != nil {
-//		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve all words."})
-//		return
-//	}
-//
-//	existingUserWords := make(map[uint]struct{})
-//	for _, userWord := range userWords {
-//		existingUserWords[userWord.WordID] = struct{}{}
-//	}
-//
-//	for _, word := range allWords {
-//		if _, exists := existingUserWords[word.ID]; !exists {
-//			existsInUserWords, err := h.service.CheckUserWordExists(word.ID)
-//			if err != nil {
-//				log.Printf("Error checking existence of word %d: %v", word.ID, err)
-//				continue
-//			}
-//
-//			if !existsInUserWords {
-//				err = h.service.AddUserWord(word.ID)
-//				if err != nil {
-//					var pgErr *pgconn.PgError
-//					if errors.As(err, &pgErr) {
-//						log.Printf("PostgreSQL error code: %s", pgErr.Code)
-//						if pgErr.Code == "23505" {
-//							log.Printf("Word %d already exists in user words, skipping.", word.ID)
-//							continue
-//						}
-//					}
-//
-//					c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add word to user words."})
-//					return
-//				}
-//			}
-//		}
-//	}
-//
-//	c.JSON(http.StatusOK, userWords)
-//}
-
 func (h *UserWordHandler) UpdateUserWord(c *gin.Context) {
 	wordID := c.Param("wordID")
 

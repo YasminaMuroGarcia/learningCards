@@ -56,7 +56,7 @@ func addCron(c *cron.Cron, schedule string, job func(), env string) {
 func insertData(db *gorm.DB, words []models.Word) {
 	var count int64
 	db.Model(&models.Word{}).Count(&count)
-	if count == 0 {
+	if count == 0 && len(words) > 0 {
 		for _, w := range words {
 			if err := db.Create(&w).Error; err != nil {
 				log.Printf("failed to insert word %s: %v", w.Word, err)
