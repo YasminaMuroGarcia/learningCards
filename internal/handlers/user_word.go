@@ -70,7 +70,15 @@ func (h *UserWordHandler) UpdateUserWord(c *gin.Context) {
 		return
 	}
 
-	err = h.service.UpdateUserWord(uint(id))
+	var requestBody struct {
+		Learned bool `json:"learned"`
+	}
+	if err := c.ShouldBindJSON(&requestBody); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err = h.service.UpdateUserWord(uint(id), requestBody.Learned)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update word"})
 		return

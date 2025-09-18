@@ -59,36 +59,49 @@ func (ur *UserWordRepository) AddUserWord(wordID uint) error {
 	}
 	return err
 }
-
-func (ur *UserWordRepository) MarkAsLearned(wordID uint) error {
+func (ur *UserWordRepository) UpdateLearningStatus(wordID uint, learned bool) error {
 	var userWord models.UserWord
 
 	if err := ur.db.Where("word_id = ?", wordID).First(&userWord).Error; err != nil {
 		return err
 	}
 
-	if userWord.BoxNumber < 5 {
-		userWord.BoxNumber++
-	}
-	switch userWord.BoxNumber {
-	case 1:
-		userWord.NextReview = time.Now().Add(24 * time.Hour) // 1 day
-	case 2:
-		userWord.NextReview = time.Now().Add(3 * 24 * time.Hour) // 3 days
-	case 3:
-		userWord.NextReview = time.Now().Add(7 * 24 * time.Hour) // 7 days
-	case 4:
-		userWord.NextReview = time.Now().Add(14 * 24 * time.Hour) // 2 weeks
-	case 5:
-		userWord.NextReview = time.Now().Add(30 * 24 * time.Hour) // 1 month
+	now := time.Now()
+	userWord.LastReview = now
+
+	if !learned {
+		// When the user failed a word, it goes directly to the first box
+		userWord.IncorrectAttempts++
+		userWord.BoxNumber = 1
+		userWord.NextReview = now.Add(24 * time.Hour) // 1 day
+	} else {
+		if userWord.BoxNumber < 5 {
+			userWord.BoxNumber++
+		}
+		userWord.NextReview = calculateNextReview(userWord.BoxNumber, now)
+		userWord.CorrectAttempts++
 	}
 
-	userWord.CorrectAttempts++
-	userWord.LastReview = time.Now()
-	err := ur.db.Save(&userWord).Error
-	if err != nil {
+	if err := ur.db.Save(&userWord).Error; err != nil {
 		fmt.Printf("Error updating user word: %v", err)
 		return err
 	}
 	return nil
+}
+
+func calculateNextReview(boxNumber uint, currentTime time.Time) time.Time {
+	switch boxNumber {
+	case 1:
+		return currentTime.Add(24 * time.Hour) // 1 day
+	case 2:
+		return currentTime.Add(3 * 24 * time.Hour) // 3 days
+	case 3:
+		return currentTime.Add(7 * 24 * time.Hour) // 7 days
+	case 4:
+		return currentTime.Add(14 * 24 * time.Hour) // 2 weeks
+	case 5:
+		return currentTime.Add(30 * 24 * time.Hour) // 1 month
+	default:
+		return currentTime // Default case, should not happen
+	}
 }

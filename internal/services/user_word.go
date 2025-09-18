@@ -25,6 +25,6 @@ func (s *UserWordService) AddUserWord(wordID uint) error {
 func (s *UserWordService) GetAllWords() ([]models.Word, error) {
 	return s.repo.GetAllWords()
 }
-func (s *UserWordService) UpdateUserWord(wordID uint) error {
-	return s.repo.MarkAsLearned(wordID)
+func (s *UserWordService) UpdateUserWord(wordID uint, learned bool) error {
+	return s.repo.UpdateLearningStatus(wordID, learned)
 }
