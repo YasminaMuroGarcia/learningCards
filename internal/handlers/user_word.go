@@ -64,7 +64,6 @@ func (h *UserWordHandler) GetUserWordDueToday(c *gin.Context) {
 func (h *UserWordHandler) UpdateUserWord(c *gin.Context) {
 	wordID := c.Param("wordID")
 
-	// Convert wordID from string to uint
 	id, err := strconv.ParseUint(wordID, 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid word ID"})
