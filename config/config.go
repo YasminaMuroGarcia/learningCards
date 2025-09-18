@@ -1,6 +1,8 @@
 package config
 
-import "os"
+import (
+	"os"
+)
 
 type DBConfig struct {
 	Host     string
@@ -10,6 +12,15 @@ type DBConfig struct {
 	SSLMode  string
 }
 
+type AppConfig struct {
+	Hostname string
+}
+
+func LoadAppConfig() AppConfig {
+	return AppConfig{
+		Hostname: getEnv("HOSTNAME", "localhost"), // Get hostname from env
+	}
+}
 func LoadDBConfig() DBConfig {
 	return DBConfig{
 		Host:     getEnv("DB_HOST", "localhost"),

@@ -30,18 +30,98 @@ func (h *UserWordHandler) GetUserWords(c *gin.Context) {
 	c.JSON(http.StatusOK, userWords)
 
 }
-
 func (h *UserWordHandler) GetUserWordDueToday(c *gin.Context) {
 	userWords, err := h.service.GetUserDueToday()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve user words for today."})
 		return
 	}
+	c.JSON(http.StatusOK, userWords)
+}
 
+//func (h *UserWordHandler) GetUserWordDueToday(c *gin.Context) {
+//	userWords, err := h.service.GetUserDueToday()
+//	if err != nil {
+//		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve user words for today."})
+//		return
+//	}
+//
+//	allWords, err := h.service.GetAllWords()
+//	if err != nil {
+//		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve all words."})
+//		return
+//	}
+//
+//	existingUserWords := make(map[uint]struct{})
+//	for _, userWord := range userWords {
+//		existingUserWords[userWord.WordID] = struct{}{}
+//	}
+//
+//	for _, word := range allWords {
+//		if _, exists := existingUserWords[word.ID]; !exists {
+//			existsInUserWords, err := h.service.CheckUserWordExists(word.ID)
+//			if err != nil {
+//				log.Printf("Error checking existence of word %d: %v", word.ID, err)
+//				continue
+//			}
+//
+//			if !existsInUserWords {
+//				err = h.service.AddUserWord(word.ID)
+//				if err != nil {
+//					var pgErr *pgconn.PgError
+//					if errors.As(err, &pgErr) {
+//						log.Printf("PostgreSQL error code: %s", pgErr.Code)
+//						if pgErr.Code == "23505" {
+//							log.Printf("Word %d already exists in user words, skipping.", word.ID)
+//							continue
+//						}
+//					}
+//
+//					c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add word to user words."})
+//					return
+//				}
+//			}
+//		}
+//	}
+//
+//	c.JSON(http.StatusOK, userWords)
+//}
+
+func (h *UserWordHandler) UpdateUserWord(c *gin.Context) {
+	wordID := c.Param("wordID")
+
+	id, err := strconv.ParseUint(wordID, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid word ID"})
+		return
+	}
+
+	var requestBody struct {
+		Learned bool `json:"learned"`
+	}
+	if err := c.ShouldBindJSON(&requestBody); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err = h.service.UpdateUserWord(uint(id), requestBody.Learned)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update word"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Word updated successfully"})
+}
+
+func (h *UserWordHandler) SyncUserWords() error {
 	allWords, err := h.service.GetAllWords()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve all words."})
-		return
+		return errors.New("failed to retrieve all words")
+	}
+
+	userWords, err := h.service.GetUserWords()
+	if err != nil {
+		return errors.New("failed to retrieve user words")
 	}
 
 	existingUserWords := make(map[uint]struct{})
@@ -68,39 +148,10 @@ func (h *UserWordHandler) GetUserWordDueToday(c *gin.Context) {
 							continue
 						}
 					}
-
-					c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add word to user words."})
-					return
+					return errors.New("failed to add word to user words")
 				}
 			}
 		}
 	}
-
-	c.JSON(http.StatusOK, userWords)
-}
-
-func (h *UserWordHandler) UpdateUserWord(c *gin.Context) {
-	wordID := c.Param("wordID")
-
-	id, err := strconv.ParseUint(wordID, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid word ID"})
-		return
-	}
-
-	var requestBody struct {
-		Learned bool `json:"learned"`
-	}
-	if err := c.ShouldBindJSON(&requestBody); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	err = h.service.UpdateUserWord(uint(id), requestBody.Learned)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update word"})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"message": "Word updated successfully"})
+	return nil
 }

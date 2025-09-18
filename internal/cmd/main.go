@@ -7,8 +7,10 @@ import (
 	"learning-cards/internal/repository"
 	"learning-cards/internal/services"
 	"log"
+	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/robfig/cron/v3"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -42,6 +44,9 @@ func main() {
 	r := gin.Default()
 	r.GET("/words/daily", userWordHandler.GetUserWordDueToday)
 	r.PUT("/words/update/:wordID", userWordHandler.UpdateUserWord)
+
+	// Set up the cron job
+	setupCronJobs(userWordHandler)
 
 	if err := r.Run(); err != nil {
 		log.Fatal("failed to start server:", err)
@@ -79,4 +84,37 @@ func insertData(db *gorm.DB, words []models.Word) {
 			}
 		}
 	}
+}
+
+// setupCronJobs sets up the cron jobs based on the environment
+func setupCronJobs(handler *handlers.UserWordHandler) {
+	appConfig := config.LoadAppConfig()
+	c := cron.New()
+	hostname, err := os.Hostname()
+	if err != nil {
+		log.Fatalf("Error getting hostname: %v", err)
+	}
+	if hostname == "localhost" || hostname == "127.0.0.1" || hostname == appConfig.Hostname {
+		// Runs every minute if on localhost
+		_, err = c.AddFunc("@every 1m", func() {
+			if err := handler.SyncUserWords(); err != nil {
+				log.Printf("Error syncing user words: %v", err)
+			}
+		})
+		if err != nil {
+			log.Fatalf("Error setting up cron job for localhost: %v", err)
+		}
+	} else {
+		// Runs daily at midnight if not on localhost
+		_, err = c.AddFunc("0 0 * * *", func() {
+			if err := handler.SyncUserWords(); err != nil {
+				log.Printf("Error syncing user words: %v", err)
+			}
+		})
+		if err != nil {
+			log.Fatalf("Error setting up cron job for production: %v", err)
+		}
+	}
+
+	c.Start()
 }
