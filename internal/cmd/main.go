@@ -51,7 +51,13 @@ func main() {
 // initializeDatabase initializes the database connection
 func initializeDatabase() (*gorm.DB, error) {
 	dbConfig := config.LoadDBConfig()
-	dsn := "host=" + dbConfig.Host + " user=" + dbConfig.User + " password=" + dbConfig.Password + " port=" + dbConfig.Port + " sslmode=" + dbConfig.SSLMode
+	dsn := "host=" + dbConfig.Host +
+		" user=" + dbConfig.User +
+		" password=" + dbConfig.Password +
+		" port=" + dbConfig.Port +
+		" sslmode=" + dbConfig.SSLMode +
+		" TimeZone=Europe/Berlin" +
+		" lc_messages=en_US" // Set error messages to English
 	return gorm.Open(postgres.Open(dsn), &gorm.Config{})
 }
 

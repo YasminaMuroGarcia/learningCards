@@ -3,6 +3,7 @@ package repository
 import (
 	"fmt"
 	"learning-cards/internal/models"
+	"log"
 	"time"
 
 	"gorm.io/gorm"
@@ -87,6 +88,20 @@ func (ur *UserWordRepository) UpdateLearningStatus(wordID uint, learned bool) er
 		return err
 	}
 	return nil
+}
+
+func (ur *UserWordRepository) CheckUserWordExists(wordID uint) (bool, error) {
+	var count int64
+	// Use GORM's Count method to check for existence
+	err := ur.db.Model(&models.UserWord{}).Where("word_id = ?", wordID).Count(&count).Error
+	if err != nil {
+		// Log the error for debugging
+		log.Printf("Error checking existence of word %d: %v", wordID, err)
+		return false, err
+	}
+
+	// If count is greater than 0, the word exists
+	return count > 0, nil
 }
 
 func calculateNextReview(boxNumber uint, currentTime time.Time) time.Time {

@@ -1,12 +1,14 @@
 package handlers
 
 import (
+	"errors"
 	"learning-cards/internal/services"
 	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgconn"
 )
 
 type UserWordHandler struct {
@@ -49,11 +51,27 @@ func (h *UserWordHandler) GetUserWordDueToday(c *gin.Context) {
 
 	for _, word := range allWords {
 		if _, exists := existingUserWords[word.ID]; !exists {
-			err := h.service.AddUserWord(word.ID)
+			existsInUserWords, err := h.service.CheckUserWordExists(word.ID)
 			if err != nil {
-				log.Printf("Error adding word %d: %v", word.ID, err)
-				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add word to user words."})
-				return
+				log.Printf("Error checking existence of word %d: %v", word.ID, err)
+				continue
+			}
+
+			if !existsInUserWords {
+				err = h.service.AddUserWord(word.ID)
+				if err != nil {
+					var pgErr *pgconn.PgError
+					if errors.As(err, &pgErr) {
+						log.Printf("PostgreSQL error code: %s", pgErr.Code)
+						if pgErr.Code == "23505" {
+							log.Printf("Word %d already exists in user words, skipping.", word.ID)
+							continue
+						}
+					}
+
+					c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add word to user words."})
+					return
+				}
 			}
 		}
 	}

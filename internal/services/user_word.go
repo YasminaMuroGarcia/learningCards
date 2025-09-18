@@ -28,3 +28,6 @@ func (s *UserWordService) GetAllWords() ([]models.Word, error) {
 func (s *UserWordService) UpdateUserWord(wordID uint, learned bool) error {
 	return s.repo.UpdateLearningStatus(wordID, learned)
 }
+func (s *UserWordService) CheckUserWordExists(wordID uint) (bool, error) {
+	return s.repo.CheckUserWordExists(wordID)
+}
