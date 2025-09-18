@@ -36,8 +36,6 @@ func main() {
 		{Word: "die Polizei", Translation: "la policía", Category: "basic, shopping"},
 	}
 
-	insertData(db, words)
-
 	userWordRepo := repository.NewUserWordRepository(db)
 	userWordService := services.NewUserWordService(userWordRepo)
 	userWordHandler := handlers.NewUserWordHandler(userWordService)
@@ -46,7 +44,7 @@ func main() {
 	r.PUT("/words/update/:wordID", userWordHandler.UpdateUserWord)
 
 	// Set up the cron job
-	setupCronJobs(userWordHandler)
+	setupCronJobs(userWordHandler, db, words)
 
 	if err := r.Run(); err != nil {
 		log.Fatal("failed to start server:", err)
@@ -87,34 +85,60 @@ func insertData(db *gorm.DB, words []models.Word) {
 }
 
 // setupCronJobs sets up the cron jobs based on the environment
-func setupCronJobs(handler *handlers.UserWordHandler) {
+func setupCronJobs(handler *handlers.UserWordHandler, db *gorm.DB, words []models.Word) {
 	appConfig := config.LoadAppConfig()
 	c := cron.New()
 	hostname, err := os.Hostname()
 	if err != nil {
 		log.Fatalf("Error getting hostname: %v", err)
 	}
-	if hostname == "localhost" || hostname == "127.0.0.1" || hostname == appConfig.Hostname {
-		// Runs every minute if on localhost
-		_, err = c.AddFunc("@every 1m", func() {
-			if err := handler.SyncUserWords(); err != nil {
-				log.Printf("Error syncing user words: %v", err)
-			}
-		})
-		if err != nil {
-			log.Fatalf("Error setting up cron job for localhost: %v", err)
-		}
+
+	if isLocalhost(hostname, appConfig.Hostname) {
+		setupLocalCronJobs(c, handler, db, words)
 	} else {
-		// Runs daily at midnight if not on localhost
-		_, err = c.AddFunc("0 0 * * *", func() {
-			if err := handler.SyncUserWords(); err != nil {
-				log.Printf("Error syncing user words: %v", err)
-			}
-		})
-		if err != nil {
-			log.Fatalf("Error setting up cron job for production: %v", err)
-		}
+		setupProductionCronJobs(c, handler, db, words)
 	}
 
 	c.Start()
+}
+
+// isLocalhost checks if the hostname is localhost or matches the app's hostname
+func isLocalhost(hostname, appHostname string) bool {
+	return hostname == "localhost" || hostname == "127.0.0.1" || hostname == appHostname
+}
+
+// setupLocalCronJobs sets up cron jobs for the localhost environment
+func setupLocalCronJobs(c *cron.Cron, handler *handlers.UserWordHandler, db *gorm.DB, words []models.Word) {
+	addCronJob(c, "@every 1m", func() {
+		if err := handler.SyncUserWords(); err != nil {
+			log.Printf("Error syncing user words: %v", err)
+		}
+	}, "localhost")
+
+	addCronJob(c, "@every 1m", func() {
+		insertData(db, words)
+		log.Println("Inserted predefined words into the database.")
+	}, "localhost")
+}
+
+// setupProductionCronJobs sets up cron jobs for the production environment
+func setupProductionCronJobs(c *cron.Cron, handler *handlers.UserWordHandler, db *gorm.DB, words []models.Word) {
+	addCronJob(c, "0 0 * * *", func() {
+		if err := handler.SyncUserWords(); err != nil {
+			log.Printf("Error syncing user words: %v", err)
+		}
+	}, "production")
+
+	addCronJob(c, "0 1 * * *", func() {
+		insertData(db, words)
+		log.Println("Inserted predefined words into the database.")
+	}, "production")
+}
+
+// addCronJob adds a cron job to the cron scheduler
+func addCronJob(c *cron.Cron, schedule string, job func(), environment string) {
+	_, err := c.AddFunc(schedule, job)
+	if err != nil {
+		log.Fatalf("Error setting up cron job for %s: %v", environment, err)
+	}
 }
