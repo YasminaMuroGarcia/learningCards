@@ -26,10 +26,9 @@ func (ur *UserWordRepository) GetUserWords() ([]models.UserWord, error) {
 
 func (ur *UserWordRepository) GetWordsDueToday() ([]models.UserWord, error) {
 	var userWords []models.UserWord
-	startOfDay := time.Now().Truncate(24 * time.Hour)
-	endOfDay := startOfDay.Add(24 * time.Hour)
+	now := time.Now().Truncate(24 * time.Hour)
 
-	if err := ur.db.Preload("Word").Where("next_review >= ? AND next_review < ?", startOfDay, endOfDay).Find(&userWords).Error; err != nil {
+	if err := ur.db.Preload("Word").Where("next_review <= ?", now).Find(&userWords).Error; err != nil {
 		return nil, err
 	}
 	return userWords, nil
