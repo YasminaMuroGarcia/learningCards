@@ -7,6 +7,6 @@ import (
 )
 
 func RegisterRoutes(r *gin.Engine, userWordHandler *handlers.UserWordHandler) {
-	r.GET("/words/daily", userWordHandler.GetUserWordDueToday)
-	r.PUT("/words/update/:wordID", userWordHandler.UpdateUserWord)
+	r.GET("/v1/words/daily", userWordHandler.GetUserWordDueToday)
+	r.PUT("/v1/words/update/:wordID", userWordHandler.UpdateUserWord)
 }
