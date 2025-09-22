@@ -1,6 +1,7 @@
 package startup
 
 import (
+	"errors"
 	"learning-cards/config"
 	"learning-cards/internal/handlers"
 	"learning-cards/internal/models"
@@ -54,12 +55,18 @@ func addCron(c *cron.Cron, schedule string, job func(), env string) {
 }
 
 func insertData(db *gorm.DB, words []models.Word) {
-	var count int64
-	db.Model(&models.Word{}).Count(&count)
-	if count == 0 && len(words) > 0 {
-		for _, w := range words {
-			if err := db.Create(&w).Error; err != nil {
-				log.Printf("failed to insert word %s: %v", w.Word, err)
+	for _, w := range words {
+		var existingWord models.Word
+		// Check if the word already exists in the database
+		err := db.Where("word = ?", w.Word).First(&existingWord).Error
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				// If the word does not exist, insert it
+				if err := db.Create(&w).Error; err != nil {
+					log.Printf("failed to insert word %s: %v", w.Word, err)
+				}
+			} else {
+				log.Printf("failed to check for existing word %s: %v", w.Word, err)
 			}
 		}
 	}
