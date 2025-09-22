@@ -10,6 +10,7 @@ import (
 	"log"
 	"path/filepath"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -35,6 +36,12 @@ func Run() error {
 	}
 
 	r := gin.Default()
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:3002"},
+		AllowMethods:     []string{"GET", "PUT", "OPTIONS"},
+		AllowHeaders:     []string{"Content-Type"},
+		AllowCredentials: true,
+	}))
 	v1.RegisterRoutes(r, userWordHandler)
 
 	if err := setupCron(userWordHandler, db, words); err != nil {
