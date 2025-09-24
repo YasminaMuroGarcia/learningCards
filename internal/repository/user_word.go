@@ -43,6 +43,20 @@ func (ur *UserWordRepository) GetAllWords() ([]models.Word, error) {
 	return words, nil
 }
 
+// GetUserWordsFromCategory Get all the words that are from the category selected
+func (ur *UserWordRepository) GetUserWordsByCategory(category string) ([]models.UserWord, error) {
+	var userWords []models.UserWord
+	now := time.Now()
+	if err := ur.db.Preload("Word").
+		Where("next_review <= ?", now).
+		Joins("INNER JOIN words ON user_words.word_id = words.id").
+		Where("words.category = ?", category).
+		Find(&userWords).Error; err != nil {
+		return nil, err
+	}
+	return userWords, nil
+}
+
 // AddUserWord Add a new user word to the user_word table
 func (ur *UserWordRepository) AddUserWord(wordID uint) error {
 	userWord := models.UserWord{

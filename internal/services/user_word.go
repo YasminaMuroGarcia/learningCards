@@ -31,3 +31,6 @@ func (s *UserWordService) UpdateUserWord(wordID uint, learned bool) error {
 func (s *UserWordService) CheckUserWordExists(wordID uint) (bool, error) {
 	return s.repo.CheckUserWordExists(wordID)
 }
+func (s *UserWordService) GetUserWordByCategory(category string) ([]models.UserWord, error) {
+	return s.repo.GetUserWordsByCategory(category)
+}

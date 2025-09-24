@@ -39,6 +39,15 @@ func (h *UserWordHandler) GetUserWordDueToday(c *gin.Context) {
 	c.JSON(http.StatusOK, userWords)
 }
 
+func (h *UserWordHandler) GetUserWordsByCategory(c *gin.Context) {
+	category := c.Param("category")
+	userWords, err := h.service.GetUserWordByCategory(category)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve user words for category."})
+	}
+	c.JSON(http.StatusOK, userWords)
+}
+
 func (h *UserWordHandler) UpdateUserWord(c *gin.Context) {
 	wordID := c.Param("wordID")
 
