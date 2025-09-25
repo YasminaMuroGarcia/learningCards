@@ -5,8 +5,37 @@ import (
 	"fmt"
 	"learning-cards/internal/models"
 	"os"
+	"path/filepath"
 	"time"
 )
+
+func ReadAllCSVs(dirPath string) ([]models.Word, error) {
+	var allWords []models.Word
+
+	err := filepath.Walk(dirPath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if !info.IsDir() && filepath.Ext(path) == ".csv" {
+			records, err := ReadCSV(path) // ReadCSV returns [][]string
+			if err != nil {
+				return err
+			}
+			convertedWords, err := ConvertToWords(records) // Pass records to ConvertToWords
+			if err != nil {
+				return err
+			}
+			allWords = append(allWords, convertedWords...)
+		}
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return allWords, nil
+}
 
 func ReadCSV(filePath string) ([][]string, error) {
 	file, err := os.Open(filePath)

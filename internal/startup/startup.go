@@ -8,7 +8,6 @@ import (
 	"learning-cards/internal/services"
 	"learning-cards/internal/utils"
 	"log"
-	"path/filepath"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -25,14 +24,9 @@ func Run() error {
 	userWordService := services.NewUserWordService(userWordRepo)
 	userWordHandler := handlers.NewUserWordHandler(userWordService)
 
-	csvPath := filepath.Join("data", "words.csv")
-	csv, err := utils.ReadCSV(csvPath)
+	words, err := utils.ReadAllCSVs("data")
 	if err != nil {
-		return err
-	}
-	words, err := utils.ConvertToWords(csv)
-	if err != nil {
-		log.Printf("warning converting words to words: %v", err)
+		log.Printf("warning loading words from CSVs: %v", err)
 	}
 
 	r := gin.Default()
