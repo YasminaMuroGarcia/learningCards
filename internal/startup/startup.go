@@ -2,6 +2,7 @@ package startup
 
 import (
 	v1 "learning-cards/api/v1"
+	"learning-cards/config"
 	"learning-cards/internal/database"
 	"learning-cards/internal/handlers"
 	"learning-cards/internal/repository"
@@ -14,6 +15,7 @@ import (
 )
 
 func Run() error {
+	appConfig := config.LoadAppConfig()
 	db, err := database.Open()
 	if err != nil {
 		return err
@@ -31,7 +33,7 @@ func Run() error {
 
 	r := gin.Default()
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000"},
+		AllowOrigins:     []string{appConfig.FrontendIP + ":3000"},
 		AllowMethods:     []string{"GET", "PUT", "OPTIONS"},
 		AllowHeaders:     []string{"Content-Type"},
 		AllowCredentials: true,

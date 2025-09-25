@@ -15,12 +15,14 @@ type DBConfig struct {
 type AppConfig struct {
 	Hostname   string
 	HostnameIP string
+	FrontendIP string
 }
 
 func LoadAppConfig() AppConfig {
 	return AppConfig{
 		Hostname:   getEnv("HOSTNAME", "localhost"),
 		HostnameIP: getEnv("HOSTNAME_IP", "192.168.0.1"),
+		FrontendIP: getEnv("FRONTEND_IP", "192.168.0.2"),
 	}
 }
 func LoadDBConfig() DBConfig {
