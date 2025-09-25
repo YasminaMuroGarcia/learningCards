@@ -31,7 +31,7 @@ func (h *UserWordHandler) GetUserWords(c *gin.Context) {
 
 }
 func (h *UserWordHandler) GetUserWordDueToday(c *gin.Context) {
-	userWords, err := h.service.GetUserDueToday()
+	userWords, err := h.service.GetUserWordsDueToday()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve user words for today."})
 		return
