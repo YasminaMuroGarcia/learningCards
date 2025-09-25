@@ -20,7 +20,7 @@ func setupCron(handler *handlers.UserWordHandler, db *gorm.DB, words []models.Wo
 		return err
 	}
 
-	isLocal := hostname == "localhost" || hostname == "127.0.0.1" || hostname == appCfg.Hostname
+	isLocal := hostname == "localhost" || hostname == appCfg.HostnameIP || hostname == appCfg.Hostname
 
 	if isLocal {
 		addCron(c, "@every 1m", func() {

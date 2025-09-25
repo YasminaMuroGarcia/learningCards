@@ -13,12 +13,14 @@ type DBConfig struct {
 }
 
 type AppConfig struct {
-	Hostname string
+	Hostname   string
+	HostnameIP string
 }
 
 func LoadAppConfig() AppConfig {
 	return AppConfig{
-		Hostname: getEnv("HOSTNAME", "localhost"),
+		Hostname:   getEnv("HOSTNAME", "localhost"),
+		HostnameIP: getEnv("HOSTNAME_IP", "192.168.0.1"),
 	}
 }
 func LoadDBConfig() DBConfig {
