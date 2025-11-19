@@ -29,7 +29,7 @@ func LoadDBConfig() DBConfig {
 	return DBConfig{
 		Host:     getEnv("DB_HOST", "localhost"),
 		User:     getEnv("DB_USER", "defaultuser"),
-		Password: getEnv("DB_PASSWORD", "defaultpassword"),
+		Password: getEnv("DB_PASSWORD", ""),
 		Port:     getEnv("DB_PORT", "5432"),
 		SSLMode:  getEnv("DB_SSLMODE", "disable"),
 	}
