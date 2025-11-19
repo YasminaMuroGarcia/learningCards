@@ -3,7 +3,7 @@ package services
 import (
 	"learning-cards/internal/models"
 	"learning-cards/internal/repository"
-	"math/rand/v2"
+	"math/rand"
 )
 
 type UserWordService struct {
