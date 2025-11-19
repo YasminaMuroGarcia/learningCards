@@ -2,8 +2,6 @@ package models
 
 import (
 	"time"
-
-	_ "gorm.io/gorm"
 )
 
 type Word struct {

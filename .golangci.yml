@@ -1,0 +1,45 @@
+version: "1"
+run:
+  timeout: 5m
+  tests: true
+  modules-download-mode: readonly
+
+linters:
+  enable:
+    - govet
+    - staticcheck
+    - errcheck
+    - revive
+    - gofmt
+    - goimports
+    - gosimple
+    - ineffassign
+    - unused
+    - gosec
+
+issues:
+  # Limits to avoid spammy outputs; tune as needed
+  max-same-issues: 0
+  max-issues-per-linter: 0
+
+  # Common excludes (regex matched against issue text)
+  exclude:
+    - "generated .* DO NOT EDIT"
+    - "error return value not checked.*(Close|Write|Flush).*(defer|test)"
+
+  # Example: ignore errcheck in test files
+  exclude-rules:
+    - path: "_test\\.go$"
+      linters:
+        - errcheck
+
+linters-settings:
+  gofmt:
+    simplify: true
+
+  staticcheck:
+    checks: ["all"]
+# Notes:
+# - This is a minimal, schema-compliant starter configuration.
+# - Remove or add linters under `linters.enable` to match your team's preferences.
+# - Run locally with: `golangci-lint run` (or `--fix` to apply auto-fixes where supported).
