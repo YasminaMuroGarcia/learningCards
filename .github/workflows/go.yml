@@ -36,7 +36,7 @@ jobs:
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v4
         with:
-          version: latest
+          install-mode: goinstall
           args: run --timeout=5m --verbose --out-format=github-actions
 
       - name: Build
