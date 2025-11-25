@@ -42,7 +42,11 @@ func ReadCSV(filePath string) ([][]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
+	// check the error on file.close()
+	err = file.Close()
+	if err != nil {
+		return nil, err
+	}
 
 	reader := csv.NewReader(file)
 
