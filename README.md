@@ -119,6 +119,19 @@ Notes:
 - The `github-actions` output format is deprecated; prefer `colored-line-number` or the default formats.
 - golangci-lint can refuse to run if the linter binary was built with an older Go version than your project's `go` version — build/install it with the same Go toolchain used for development or in CI.
 
+### Pre-commit
+
+The repository includes a `.pre-commit-config.yaml` that defines a `golangci-lint` hook using `language: system`. To enable:
+
+1. Install `pre-commit` (e.g. `pip install pre-commit`).
+2. Ensure `golangci-lint` is installed and on your `PATH` (see Local steps).
+3. Install the git hook in your clone:
+   - `pre-commit install`
+4. Optionally run lint on all files:
+   - `pre-commit run --all-files`
+
+The pre-commit hook runs at commit time and by default runs the linter across the module (not only staged files) to allow whole-package checks. If you prefer faster staged-file checks, consider configuring a lightweight set of checks for pre-commit and leave the full suite to CI.
+
 ### CI (GitHub Actions)
 
 To ensure consistent linter builds in CI, build `golangci-lint` inside the job (so the binary is built with the job's Go version) or use the official action with an install mode that builds from source. Example steps that build and run the linter:
