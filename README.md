@@ -101,6 +101,48 @@ On startup the app will:
 
 If you prefer, set the environment and run via your IDE / debugger.
 
+## Linting
+
+This project uses `golangci-lint` for static analysis. The repository includes a pre-commit hook configuration (`.pre-commit-config.yaml`) to run the linter locally on commit. Below are recommended instructions for running lint checks locally, via pre-commit, and in CI.
+
+### Local
+
+1. Install Go (match the project's Go version — currently Go 1.25).
+2. Install `golangci-lint` (build with your Go toolchain so the binary is compatible with your target Go version):
+   - `go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.8`
+   - Make sure `$(go env GOPATH)/bin` or `$HOME/go/bin` is on your `PATH`.
+3. Run the linter:
+   - `golangci-lint run --timeout=5m --out-format=colored-line-number ./...`
+   - For quieter/targeted runs you can scope to packages, e.g. `./internal/...`.
+
+Notes:
+- The `github-actions` output format is deprecated; prefer `colored-line-number` or the default formats.
+- golangci-lint can refuse to run if the linter binary was built with an older Go version than your project's `go` version — build/install it with the same Go toolchain used for development or in CI.
+
+### CI (GitHub Actions)
+
+To ensure consistent linter builds in CI, build `golangci-lint` inside the job (so the binary is built with the job's Go version) or use the official action with an install mode that builds from source. Example steps that build and run the linter:
+
+- Install with the job's Go toolchain:
+```yaml
+- name: Set up Go
+  uses: actions/setup-go@v4
+  with:
+    go-version: '1.25'
+
+- name: Install golangci-lint
+  run: go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.8
+
+- name: Run golangci-lint
+  run: |
+    golangci-lint --version
+    golangci-lint run --timeout=5m --verbose --out-format=colored-line-number ./...
+```
+
+Alternatively, if using the `golangci/golangci-lint-action@v4`, prefer an install mode that builds with the job Go (for example `install-mode: goinstall`) or explicitly install the linter as above before running it — this prevents the "binary built with older Go than targeted" error.
+
+CI should fail when linter errors are found (so code must be fixed before merging), but you can temporarily allow lint failures with `continue-on-error: true` on the step while addressing issues.
+
 ## Run with Docker / docker-compose
 
 There is a `Dockerfile` and `docker-compose.yml` for development convenience.

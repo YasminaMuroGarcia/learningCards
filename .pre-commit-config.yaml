@@ -1,0 +1,33 @@
+# Pre-commit configuration to run golangci-lint at commit time.
+#
+# Usage:
+# 1. Install pre-commit (e.g. `pip install pre-commit`).
+# 2. Install golangci-lint locally (so the hook can use it):
+#    go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.8
+#    Make sure $(go env GOPATH)/bin or $HOME/go/bin is on your PATH.
+# 3. Enable the git hook in your clone:
+#    pre-commit install
+# 4. Optionally test on all files:
+#    pre-commit run --all-files
+#
+# Notes:
+# - This hook uses `language: system` and expects the `golangci-lint` binary
+#   to be available in PATH. That ensures the binary is built with the developer's
+#   Go toolchain (avoids Go-version mismatches).
+# - The hook runs the linter across the whole module (pass_filenames: false)
+#   because many linters need whole-package context. If you prefer faster checks
+#   only on staged files, set `pass_filenames: true` and adjust the `entry`.
+#
+repos:
+  - repo: local
+    hooks:
+      - id: golangci-lint
+        name: golangci-lint
+        # Run the full linter across the module so package-level checks work.
+        entry: golangci-lint run --out-format=colored-line-number --timeout=5m ./...
+        language: system
+        files: '\.go$'
+        exclude: '^vendor/'
+        pass_filenames: false
+        stages: [commit]
+        description: "Run golangci-lint (must be installed and available on PATH)."
