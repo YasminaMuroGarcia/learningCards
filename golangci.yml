@@ -6,3 +6,15 @@ linters:
     - govet
     - staticcheck
     - gofmt
+    - golines
+    - makezero
+    - nilerr
+    - errcheck
+    - errname
+    - errorlint
+    - nilnesserr
+    - nestif
+    - sqlclosecheck
+    - unused
+    - wastedassign
+    - whitespace
